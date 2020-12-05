@@ -19,7 +19,7 @@
   "author": "Auth0",
   "license": "MIT",
   "auth0-extension": {
-    "nodeTarget": "4.2.0",
+    "nodeTarget": "8.9.0",
     "bundleModules": true,
     "externals": [
       "auth0-extension-hapi-tools@1.3.1",
