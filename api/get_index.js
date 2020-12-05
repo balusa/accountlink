@@ -2,6 +2,8 @@ const { decode } = require('jsonwebtoken');
 const _ = require('lodash');
 const config = require('../lib/config');
 const findUsersByEmail = require('../lib/findUsersByEmail');
+const findUserByBindID = require('../lib/findUserByBindID');
+const findUser = require('../lib/findUser');
 const indexTemplate = require('../templates/index');
 const logger = require('../lib/logger');
 const stylesheet = require('../lib/stylesheet');
@@ -13,19 +15,31 @@ const { getSettings } = require('../lib/storage');
 const decodeToken = token =>
   new Promise((resolve, reject) => {
     try {
+      console.log("Decode token : ");
+      console.log(decode(token));
       resolve(decode(token));
     } catch (e) {
       reject(e);
     }
   });
 
-const fetchUsersFromToken = ({ sub, email }) =>
-  findUsersByEmail(email).then(users => ({
-    currentUser: users.find(u => u.user_id === sub),
+const fetchUsersFromToken = ({ sub, bindid }) => {
+console.log("sub = " + sub + " : Bind ID = " + bindid);
+
+return findUser(sub).then(curUser => {
+  console.log("Current user");
+  console.log(JSON.stringify(curUser));
+
+  return findUserByBindID(bindid).then(users => ({
+    currentUser: curUser,
     matchingUsers: users
       .filter(u => u.user_id !== sub)
       .sort((prev, next) => new Date(prev.created_at) - new Date(next.created_at))
   }));
+
+} );
+
+}
 
 module.exports = () => ({
   method: 'GET',
