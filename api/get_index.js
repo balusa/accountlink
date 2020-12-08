@@ -30,12 +30,10 @@ return findUser(sub).then(curUser => {
   console.log("Current user");
   console.log(JSON.stringify(curUser));
 
-  return findUserByBindID(bindid).then(users => ({
+  return {
     currentUser: curUser,
-    matchingUsers: users
-      .filter(u => u.user_id !== sub)
-      .sort((prev, next) => new Date(prev.created_at) - new Date(next.created_at))
-  }));
+    matchingUsers : []
+  }
 
 } );
 
@@ -68,22 +66,8 @@ module.exports = () => ({
         fetchUsersFromToken(token)
           .then(({ currentUser, matchingUsers }) => {
             getSettings().then((settings) => {
-              // if there are multiple matching users, take the oldest one
-              const userMetadata = (matchingUsers[0] && matchingUsers[0].user_metadata) || {};
-              const locale = typeof userMetadata.locale === 'string' ? userMetadata.locale : settings.locale;
-              resolveLocale(locale).then((t) => {
-                // FIXME: The "continue" button is always poiting to first user's identity
-                // connection, so we can't show all available alternatives in the introduction
-                // text: "You may sign in with IdP1 or IdP2 or..."
-                // A proper fix could be showing multiple "continue" links (one per existing
-                // identity) or one "continue" link with a connection selector.
-                const rawIdentities =
-                  matchingUsers.length > 0 ? [matchingUsers[0].identities[0]] : [];
-                const identities = rawIdentities
-                  .map(id => id.provider)
-                  .map(getIdentityProviderPublicName);
-                const humanizedIdentities = humanizeArray(identities, t('or'));
 
+              resolveLocale(locale).then((t) => {
                 reply(
                   indexTemplate({
                     dynamicSettings,
@@ -92,7 +76,7 @@ module.exports = () => ({
                     matchingUsers,
                     customCSSTag,
                     locale,
-                    identities: humanizedIdentities
+                    identities: []
                   })
                 );
               });
